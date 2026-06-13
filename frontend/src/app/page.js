@@ -39,7 +39,7 @@ export default function Home() {
           
           <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
             <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white text-center px-8 py-3.5 rounded-xl font-bold shadow-lg shadow-blue-200 transition">
-              Get Started (রোগী/ডাক্তার)
+              Get Started 
             </Link>
             <Link href="/login" className="bg-white hover:bg-gray-50 text-gray-800 text-center px-8 py-3.5 rounded-xl font-bold border border-gray-300 shadow-sm transition">
               Sign In to Dashboard

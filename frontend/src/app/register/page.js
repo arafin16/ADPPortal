@@ -37,8 +37,8 @@ export default function Register() {
         
         <select className="w-full p-3 mb-6 border rounded bg-white"
           onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
-          <option value="Patient">Patient (রোগী)</option>
-          <option value="Doctor">Doctor (ডাক্তার)</option>
+          <option value="Patient">Patient </option>
+          <option value="Doctor">Doctor </option>
           <option value="Admin">Admin</option>
         </select>
 

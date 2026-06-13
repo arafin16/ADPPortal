@@ -6,18 +6,21 @@ export default function DashboardBridge() {
   const router = useRouter();
 
   useEffect(() => {
-  const role = localStorage.getItem("role");
+    // সেফটি চেক: ব্রাউজার লোড হওয়া পর্যন্ত অপেক্ষা করবে
+    if (typeof window !== "undefined") {
+      const role = localStorage.getItem("role");
 
-  if (!role) {
-    router.push("/login");
-  } else if (role === "Admin") {
-    router.push("/dashboard/admin"); 
-  } else if (role === "Doctor") {
-    router.push("/dashboard/doctor");
-  } else {
-    router.push("/dashboard/patient");
-  }
-}, [router]);
+      if (!role) {
+        router.push("/login");
+      } else if (role === "Admin") {
+        router.push("/dashboard/admin");
+      } else if (role === "Doctor") {
+        router.push("/dashboard/doctor");
+      } else {
+        router.push("/dashboard/patient");
+      }
+    }
+  }, [router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">

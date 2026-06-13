@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 flex flex-col justify-between">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-teal-50 flex flex-col justify-between">
       
       {/* Navbar */}
       <header className="bg-white shadow-sm border-b">
@@ -29,7 +29,7 @@ export default function Home() {
         <div className="flex-1 text-center lg:text-left">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
             Your Health, Our Priority. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-teal-500">
               Smart Healthcare Solution
             </span>
           </h1>

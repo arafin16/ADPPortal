@@ -5,50 +5,60 @@ import axios from "axios";
 
 export default function DoctorDashboard() {
   const router = useRouter();
-  const [name, setName] = useState(() => localStorage.getItem("name") || "Doctor");
+  const [name] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("name") || "Doctor";
+    }
+    return "Doctor";
+  });
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ডাটাবেজ থেকে শুধু এই ডাক্তারের অ্যাপয়েন্টমেন্টগুলো নিয়ে আসা
+  const fetchDoctorAppointments = async (doctorName) => {
+    if (!doctorName) return;
+    try {
+      const res = await axios.get("http://localhost:5227/api/Appointment/all");
+      const myAppointments = res.data.filter(
+        (app) => app.doctorName.toLowerCase() === `dr. ${doctorName.toLowerCase()}` || 
+                 app.doctorName.toLowerCase() === doctorName.toLowerCase()
+      );
+      setAppointments(myAppointments);
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch doctor appointments.");
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const role = localStorage.getItem("role");
     const doctorName = localStorage.getItem("name");
 
-    // সিকিউরিটি চেক
     if (role !== "Doctor") {
       router.push("/login");
       return;
     }
 
     const loadAppointments = async () => {
-      try {
-        const res = await axios.get("http://localhost:5227/api/Appointment/all");
-
-        // ডাটাবেজের সব অ্যাপয়েন্টমেন্ট থেকে শুধু এই ডাক্তারের নামের অ্যাপয়েন্টমেন্টগুলো ফিল্টার করা
-        const myAppointments = res.data.filter(
-          (app) => app.doctorName.toLowerCase() === `dr. ${doctorName.toLowerCase()}` ||
-                   app.doctorName.toLowerCase() === doctorName.toLowerCase()
-        );
-
-        setAppointments(myAppointments);
-      } catch (err) {
-        console.error("Failed to fetch doctor appointments.");
-      } finally {
-        setLoading(false);
-      }
+      await fetchDoctorAppointments(doctorName);
     };
 
     loadAppointments();
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.clear();
-    router.push("/login");
+    if (typeof window !== "undefined") {
+      localStorage.clear();
+      router.push("/login");
+    }
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
       <div className="w-64 bg-teal-800 text-white p-6 flex flex-col justify-between">
         <div>
           <h2 className="text-2xl font-bold mb-8">Doctor Panel</h2>
@@ -61,14 +71,12 @@ export default function DoctorDashboard() {
         </button>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 p-10">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Welcome, Dr. {name}! 🩺</h1>
           <p className="text-gray-600">Below is the list of patients who booked an appointment with you.</p>
         </header>
 
-        {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="text-gray-500 font-medium uppercase text-sm">Total Patients</h3>
@@ -82,7 +90,6 @@ export default function DoctorDashboard() {
           </div>
         </div>
 
-        {/* Appointments Table */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <h2 className="bg-teal-700 text-white p-4 font-bold text-lg">Patient Serials</h2>
           

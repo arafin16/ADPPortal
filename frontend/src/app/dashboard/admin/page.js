@@ -11,7 +11,7 @@ export default function AdminDashboard() {
   // সব অ্যাপয়েন্টমেন্ট ডাটাবেজ থেকে নিয়ে আসা
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get("http://localhost:5227/api/Appointment/all");
+      const res = await axios.get("https://arafin3-001-site1.itempurl.com/api/Appointment/al");
       setAppointments(res.data);
     } catch (err) {
       console.error("Failed to fetch appointments.");
@@ -35,7 +35,7 @@ export default function AdminDashboard() {
   // স্ট্যাটাস পরিবর্তন করা (Approve/Cancel)
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      const res = await axios.put(`http://localhost:5227/api/Appointment/status/${id}`, JSON.stringify(newStatus), {
+      const res = await axios.put(`https://arafin3-001-site1.itempurl.com/api/Appointment/status/${id}`, JSON.stringify(newStatus), {
         headers: { "Content-Type": "application/json" }
       });
       setMessage(res.data.message);
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="flex-1 p-10">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard ⚙️</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard </h1>
           <p className="text-gray-600">Overview of all patient appointments and system controls.</p>
         </header>
 

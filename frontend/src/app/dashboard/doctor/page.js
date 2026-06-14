@@ -73,7 +73,7 @@ export default function DoctorDashboard() {
 
       <div className="flex-1 p-10">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Welcome, Dr. {name}! 🩺</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Welcome, Dr. {name}! </h1>
           <p className="text-gray-600">Below is the list of patients who booked an appointment with you.</p>
         </header>
 

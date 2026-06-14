@@ -9,7 +9,7 @@ export default function Home() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <span className="text-2xl text-blue-600 font-bold">🩺 Patient Portal</span>
+            <span className="text-2xl text-blue-600 font-bold">Patient Portal</span>
           </div>
           <div className="space-x-4">
             <Link href="/login" className="text-gray-600 hover:text-blue-600 font-medium transition">

@@ -13,27 +13,34 @@ export default function Login() {
     try {
       const res = await axios.post("https://arafin3-001-site1.itempurl.com/api/Auth/login", formData);
       
-      // 🎯 ১. টোকেন এবং রোল সেভ করা
+      console.log("Login Full Response:", res.data); // ডেবাগ করার জন্য
+
+      // ১. টোকেন এবং রোল সেভ করা
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
       
-      // 🎯 ২. পেশেন্ট ড্যাশবোর্ডের জন্য পুরো ইউজার অবজেক্ট (Id এবং Name সহ) সেভ করা (মেইন ফিক্স)
+      // 🎯 ২. আইডি এবং নেম ব্যাকএন্ড রেসপন্স থেকে সরাসরি বা অবজেক্ট থেকে সেফলি এক্সট্রাক্ট করা
+      const userId = res.data.id || res.data.Id || res.data.userId || res.data.user?.id || res.data.user?.Id || null;
+      const userName = res.data.name || res.data.Name || res.data.user?.name || res.data.user?.Name || "Patient";
+
       const userObj = {
-        id: res.data.id || res.data.Id || null,
-        name: res.data.name || res.data.Name || "Patient"
+        id: userId,
+        name: userName
       };
+
+      // 🎯 লোকালস্টোরেজে "user" অবজেক্টটি সেভ করা (যা আগে মিস হচ্ছিল)
       localStorage.setItem("user", JSON.stringify(userObj));
 
-      setMessage(`Welcome back, ${userObj.name}! Login Successful.`);
+      setMessage(`Welcome back, ${userName}! Login Successful.`);
       
-      // 🎯 ৩. রোল (Role) অনুযায়ী সঠিক ড্যাশবোর্ডে রিডাইরেক্ট করা
+      // ৩. রোল অনুযায়ী সঠিক ড্যাশবোর্ডে পাঠানো
       setTimeout(() => {
         if (res.data.role === "Admin") {
           router.push("/dashboard/admin");
         } else {
           router.push("/dashboard/patient");
         }
-      }, 1000); // ১ সেকেন্ড পর রিডাইরেক্ট হবে যেন সাকসেস মেসেজটা দেখা যায়
+      }, 1000);
 
     } catch (err) {
       console.error("Login Error:", err);

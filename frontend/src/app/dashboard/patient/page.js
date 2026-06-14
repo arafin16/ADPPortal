@@ -9,20 +9,25 @@ export default function PatientDashboard() {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [message, setMessage] = useState("");
   
-  // Initialize currentUser from localStorage on first render to avoid calling setState inside an effect
+  // 🎯 লোকালস্টোরেজ থেকে আইডি রিড করার সুপার-সেফ এবং ক্র্যাশ-প্রুফ মেকানিজম
   const [currentUser, setCurrentUser] = useState(() => {
+    if (typeof window === "undefined") return { id: null, name: "Patient" };
+
     try {
-      const userData = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        const userId = parsedUser.id || parsedUser.Id || parsedUser.ID || parsedUser.userId || null;
-        const userName = parsedUser.name || parsedUser.Name || 'Patient';
-        return { id: userId, name: userName };
-      }
+      const userData = localStorage.getItem("user");
+      if (!userData) return { id: null, name: "Patient" };
+
+      const parsedUser = JSON.parse(userData);
+      
+      // 🎯 ব্যাকএন্ডের ডটনেট কন্ট্রোলার যে বানানেই আইডি পাঠাক না কেন (ছোট/বড় হাত/অবজেক্ট)—সব ব্যাকআপ এখানে হ্যান্ডেল করা হলো
+      const userId = parsedUser.id || parsedUser.Id || parsedUser.ID || parsedUser.userId || parsedUser.patientId || null;
+      const userName = parsedUser.name || parsedUser.Name || parsedUser.userName || "Patient";
+
+      return { id: userId, name: userName };
     } catch (e) {
-      console.error('Failed to parse user from localStorage', e);
+      console.error("Failed to parse user from localStorage", e);
+      return { id: null, name: "Patient" };
     }
-    return { id: null, name: 'Patient' };
   });
 
   // ১. পেজ লোড হলেই ডক্টর লিস্ট ফেচ করা
@@ -64,7 +69,7 @@ export default function PatientDashboard() {
       return;
     }
 
-    // 🎯 রিয়েল-টাইমে আপডেট হওয়া স্টেট ভ্যালু পারফেক্টলি চেক করবে
+    // 🎯 রিয়েল-টাইমে সেফ চেক
     if (!currentUser.id) {
       setMessage("User not authenticated. Please logout and login again.");
       return;
@@ -92,7 +97,7 @@ export default function PatientDashboard() {
     }
   };
 
-  // ৩. অ্যাপয়েন্টমেন্ট ক্যানসেল করা
+  // ৩. অ্যাপয়েন্টমেন্ট ক্যানсел করা
   const handleCancel = async (id) => {
     if (!confirm("Are you sure you want to cancel this appointment?")) return;
 
@@ -101,7 +106,7 @@ export default function PatientDashboard() {
         { status: "Cancelled" }, 
         { headers: { "Content-Type": "application/json" } }
       );
-      fetchMyAppointments(currentUser.id); // ক্যানসেল হওয়ার পর টেবিল রিফ্রেশ
+      fetchMyAppointments(currentUser.id); // ক্যানсел হওয়ার পর টেবিল রিফ্রেশ
     } catch (err) {
       alert("Failed to cancel appointment.");
     }

@@ -8,10 +8,11 @@ export default function AdminDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [message, setMessage] = useState("");
 
-  // সব অ্যাপয়েন্টমেন্ট ডাটাবেজ থেকে নিয়ে আসা
+  // সব অ্যাপয়েন্টমেন্ট ডাটাবেজ থেকে নিয়ে আসা
   const fetchAppointments = async () => {
     try {
-      const res = await axios.get("https://arafin3-001-site1.itempurl.com/api/Appointment/al");
+      
+      const res = await axios.get("https://arafin3-001-site1.itempurl.com/api/Appointment/all");
       setAppointments(res.data);
     } catch (err) {
       console.error("Failed to fetch appointments.");
@@ -35,10 +36,13 @@ export default function AdminDashboard() {
   // স্ট্যাটাস পরিবর্তন করা (Approve/Cancel)
   const handleStatusUpdate = async (id, newStatus) => {
     try {
-      const res = await axios.put(`https://arafin3-001-site1.itempurl.com/api/Appointment/status/${id}`, JSON.stringify(newStatus), {
-        headers: { "Content-Type": "application/json" }
-      });
-      setMessage(res.data.message);
+      // 🎯 ব্যাকএন্ডের নতুন রিসিভারের সাথে মিল রেখে ডাটা বডি অবজেক্ট আকারে পাঠানো হলো
+      const res = await axios.put(`https://arafin3-001-site1.itempurl.com/api/Appointment/status/${id}`, 
+        { status: newStatus }, 
+        { headers: { "Content-Type": "application/json" } }
+      );
+      
+      setMessage(res.data.message || `Appointment ${newStatus} successfully!`);
       fetchAppointments(); // টেবিল রিফ্রেশ করা
       setTimeout(() => setMessage(""), 3000);
     } catch (err) {
@@ -97,7 +101,7 @@ export default function AdminDashboard() {
                   <tr key={app.id} className="hover:bg-gray-50">
                     <td className="p-4 font-medium">{app.patientName}</td>
                     <td className="p-4">{app.doctorName}</td>
-                    <td className="p-4">{new Date(app.appointmentDate).toLocaleString()}</td>
+                    <td className="p-4">{app.appointmentDate ? new Date(app.appointmentDate).toLocaleString() : "N/A"}</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded text-xs font-bold ${
                         app.status === "Approved" ? "bg-green-100 text-green-700" :

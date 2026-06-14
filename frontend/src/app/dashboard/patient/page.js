@@ -9,7 +9,7 @@ export default function PatientDashboard() {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [message, setMessage] = useState("");
   
-  // 🎯 লোকালস্টোরেজ থেকে ছোট হাতের (id) অথবা বড় হাতের (Id) যেকোনো ফরম্যাটে ডেটা সেফলি রিড করার লজিক
+  // 🎯 লোকালস্টোরেজ থেকে আইডি রিড করার সুপার-সেফ মেকানিজম (Hydration Error ফিক্সড)
   const [currentUser, setCurrentUser] = useState(() => {
     if (typeof window === "undefined") return { id: null, name: "Patient" };
 
@@ -18,7 +18,9 @@ export default function PatientDashboard() {
       if (!userData) return { id: null, name: "Patient" };
 
       const parsedUser = JSON.parse(userData);
-      const userId = parsedUser.id || parsedUser.Id || parsedUser.ID || null;
+      
+      // 🎯 ব্যাকএন্ড থেকে ডিরেক্ট আইডি বা ইউজার অবজেক্ট যে বানানেই আসুক, সব চেক করা হলো
+      const userId = parsedUser.id || parsedUser.Id || parsedUser.ID || parsedUser.userId || null;
       const userName = parsedUser.name || parsedUser.Name || "Patient";
 
       return { id: userId, name: userName };
@@ -135,7 +137,13 @@ export default function PatientDashboard() {
           {/* Booking Form */}
           <div className="bg-white p-6 rounded-lg shadow-md h-fit">
             <h3 className="text-xl font-bold text-blue-700 mb-4">Book New Appointment</h3>
-            {message && <p className="mb-4 text-sm font-semibold text-green-600 bg-green-50 p-2 rounded">{message}</p>}
+            {message && (
+              <p className={`mb-4 text-sm font-semibold p-2 rounded ${
+                message.includes("successfully") ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"
+              }`}>
+                {message}
+              </p>
+            )}
             
             <form onSubmit={handleBook} className="space-y-4">
               <div>
@@ -188,7 +196,7 @@ export default function PatientDashboard() {
                     </tr>
                   ) : (
                     appointments.map((app) => (
-                      <tr key={app.id} className="hover:bg-gray-50 transition">
+                      <tr key={app.id || app.Id} className="hover:bg-gray-50 transition">
                         <td className="p-3 font-medium text-gray-800">{app.doctorName || app.DoctorName}</td>
                         <td className="p-3 text-gray-600">
                           {app.appointmentDate || app.AppointmentDate ? new Date(app.appointmentDate || app.AppointmentDate).toLocaleString() : "N/A"}

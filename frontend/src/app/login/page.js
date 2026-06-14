@@ -2,8 +2,9 @@
 import { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+
 export default function Login() {
-    const router = useRouter();
+  const router = useRouter();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
 
@@ -12,16 +13,30 @@ export default function Login() {
     try {
       const res = await axios.post("https://arafin3-001-site1.itempurl.com/api/Auth/login", formData);
       
-      
+      // 🎯 ১. টোকেন এবং রোল সেভ করা
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
-      localStorage.setItem("name", res.data.name);
+      
+      // 🎯 ২. পেশেন্ট ড্যাশবোর্ডের জন্য পুরো ইউজার অবজেক্ট (Id এবং Name সহ) সেভ করা (মেইন ফিক্স)
+      const userObj = {
+        id: res.data.id || res.data.Id || null,
+        name: res.data.name || res.data.Name || "Patient"
+      };
+      localStorage.setItem("user", JSON.stringify(userObj));
 
-      setMessage(`Welcome back, ${res.data.name}! Login Successful.`);
+      setMessage(`Welcome back, ${userObj.name}! Login Successful.`);
       
-      
-      router.push("/dashboard");
+      // 🎯 ৩. রোল (Role) অনুযায়ী সঠিক ড্যাশবোর্ডে রিডাইরেক্ট করা
+      setTimeout(() => {
+        if (res.data.role === "Admin") {
+          router.push("/dashboard/admin");
+        } else {
+          router.push("/dashboard/patient");
+        }
+      }, 1000); // ১ সেকেন্ড পর রিডাইরেক্ট হবে যেন সাকসেস মেসেজটা দেখা যায়
+
     } catch (err) {
+      console.error("Login Error:", err);
       setMessage(err.response?.data || "Invalid email or password!");
     }
   };
@@ -30,19 +45,28 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <form onSubmit={handleLogin} className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-center text-green-600">Patient Portal - Login</h2>
-        {message && <p className="mb-4 text-center text-sm font-semibold text-green-500">{message}</p>}
+        {message && <p className="mb-4 text-center text-sm font-semibold text-green-500 bg-green-50 p-2 rounded">{message}</p>}
         
-        <input type="email" placeholder="Email Address" required className="w-full p-3 mb-4 border rounded"
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+        <input 
+          type="email" 
+          placeholder="Email Address" 
+          required 
+          className="w-full p-3 mb-4 border rounded"
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
+        />
         
-        <input type="password" placeholder="Password" required className="w-full p-3 mb-6 border rounded"
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+        <input 
+          type="password" 
+          placeholder="Password" 
+          required 
+          className="w-full p-3 mb-6 border rounded"
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })} 
+        />
 
-        <button type="submit" className="w-full bg-green-600 text-white p-3 rounded font-bold hover:bg-green-700">
+        <button type="submit" className="w-full bg-green-600 text-white p-3 rounded font-bold hover:bg-green-700 transition">
           Login
         </button>
-        <p className="mt-4 text-center text-sm">Don&apos;t have an account? <a href="/register" className="text-green-500">Register</a></p>
-        
+        <p className="mt-4 text-center text-sm">Don&apos;t have an account? <a href="/register" className="text-green-500 hover:underline">Register</a></p>
       </form>
     </div>
   );

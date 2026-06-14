@@ -10,7 +10,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5227/api/Auth/login", formData);
+      const res = await axios.post("http://arafin3-001-site1.itempurl.com/api/Auth/login", formData);
       
       
       localStorage.setItem("token", res.data.token);

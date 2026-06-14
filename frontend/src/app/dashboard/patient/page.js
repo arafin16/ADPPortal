@@ -16,7 +16,7 @@ export default function PatientDashboard() {
 
   const fetchDoctors = async () => {
     try {
-      const res = await axios.get("http://localhost:5227/api/Auth/doctors");
+      const res = await axios.get("http://arafin3-001-site1.itempurl.com/api/Auth/doctors");
       setDoctors(res.data);
     } catch (err) {
       console.error("Failed to fetch doctors list.");
@@ -50,7 +50,7 @@ export default function PatientDashboard() {
         status: "Pending"
       };
 
-      const res = await axios.post("http://localhost:5227/api/Appointment/book", appointmentData);
+      const res = await axios.post("http://arafin3-001-site1.itempurl.com/api/Appointment/book", appointmentData);
       setMessage(res.data.message);
       setDoctorName("");
       setAppointmentDate("");

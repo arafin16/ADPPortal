@@ -13,36 +13,36 @@ export default function Login() {
     try {
       const res = await axios.post("https://arafin3-001-site1.itempurl.com/api/Auth/login", formData);
       
-      console.log("Login Full Response:", res.data); // ডেবাগ করার জন্য
+      console.log("Login Full Response Data:", res.data); // ব্রাউজার কনসোলে ব্যাকএন্ড ডেটা দেখার জন্য
 
       // ১. টোকেন এবং রোল সেভ করা
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
-      
-      // ২. আইডি এবং নেম ব্যাকএন্ড রেসপন্স থেকে সেফলি এক্সট্রাক্ট করা
-      const userId = res.data.id || res.data.Id || res.data.userId || res.data.user?.id || res.data.user?.Id || null;
-      const userName = res.data.name || res.data.Name || res.data.user?.name || res.data.user?.Name || "User";
 
+      // 🎯 ২. ব্যাকএন্ড রেসপন্স থেকে আইডি এবং নাম খোঁজার সুপার-সেফ মেকানিজম (মেইন ফিক্স)
+      const userId = res.data.id || res.data.Id || res.data.userId || res.data.patientId || res.data.user?.id || res.data.user?.Id || null;
+      const userName = res.data.name || res.data.Name || res.data.user?.name || res.data.user?.Name || "Patient";
+
+      // অবজেক্ট তৈরি
       const userObj = {
         id: userId,
         name: userName
       };
 
-      // লোকালস্টোরেজে "user" অবজেক্টটি সেভ করা
+      // 🎯 ৩. লোকালস্টোরেজে "user" কি (Key) দিয়ে অবজেক্টটি সেভ করা
       localStorage.setItem("user", JSON.stringify(userObj));
 
       setMessage(`Welcome back, ${userName}! Login Successful.`);
       
-      // 🎯 ৩. রোল অনুযায়ী যার যার সঠিক ড্যাশবোর্ডে নিখুঁতভাবে পাঠানো
+      // ৪. রোল (Role) অনুযায়ী সঠিক ড্যাশবোর্ডে রিডাইরেক্ট করা
       setTimeout(() => {
         const userRole = res.data.role;
-        
         if (userRole === "Admin") {
           router.push("/dashboard/admin");
         } else if (userRole === "Doctor") {
-          router.push("/dashboard/doctor"); // 👈 ডক্টর হলে ডক্টর ড্যাশবোর্ডে যাবে
+          router.push("/dashboard/doctor");
         } else {
-          router.push("/dashboard/patient"); // 👈 পেশেন্ট বা অন্য কেউ হলে পেশেন্ট ড্যাশবোর্ডে যাবে
+          router.push("/dashboard/patient");
         }
       }, 1000);
 

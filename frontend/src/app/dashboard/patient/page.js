@@ -9,25 +9,22 @@ export default function PatientDashboard() {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [message, setMessage] = useState("");
   
-  // 🎯 লোকালস্টোরেজ থেকে আইডি রিড করার সুপার-সেফ এবং ক্র্যাশ-প্রুফ মেকানিজম
   const [currentUser, setCurrentUser] = useState(() => {
     if (typeof window === "undefined") return { id: null, name: "Patient" };
 
     try {
       const userData = localStorage.getItem("user");
-      if (!userData) return { id: null, name: "Patient" };
-
-      const parsedUser = JSON.parse(userData);
-      
-      // 🎯 ব্যাকএন্ডের ডটনেট কন্ট্রোলার যে বানানেই আইডি পাঠাক না কেন (ছোট/বড় হাত/অবজেক্ট)—সব ব্যাকআপ এখানে হ্যান্ডেল করা হলো
-      const userId = parsedUser.id || parsedUser.Id || parsedUser.ID || parsedUser.userId || parsedUser.patientId || null;
-      const userName = parsedUser.name || parsedUser.Name || parsedUser.userName || "Patient";
-
-      return { id: userId, name: userName };
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        const userId = parsedUser.id || parsedUser.Id || parsedUser.ID || parsedUser.userId || parsedUser.patientId || null;
+        const userName = parsedUser.name || parsedUser.Name || parsedUser.userName || "Patient";
+        return { id: userId, name: userName };
+      }
     } catch (e) {
       console.error("Failed to parse user from localStorage", e);
-      return { id: null, name: "Patient" };
     }
+
+    return { id: null, name: "Patient" };
   });
 
   // ১. পেজ লোড হলেই ডক্টর লিস্ট ফেচ করা
@@ -69,7 +66,7 @@ export default function PatientDashboard() {
       return;
     }
 
-    // 🎯 রিয়েল-টাইমে সেফ চেক
+    // 🎯 রিয়েল-টাইমে আপডেট হওয়া স্টেট ভ্যালু পারফেক্টলি চেক করবে
     if (!currentUser.id) {
       setMessage("User not authenticated. Please logout and login again.");
       return;

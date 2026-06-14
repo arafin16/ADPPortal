@@ -17,7 +17,7 @@ export default function DoctorDashboard() {
   const fetchDoctorAppointments = async (doctorName) => {
     if (!doctorName) return;
     try {
-      const res = await axios.get("http://arafin3-001-site1.itempurl.com/api/Appointment/all");
+      const res = await axios.get("https://arafin3-001-site1.itempurl.com/api/Appointment/all");
       const myAppointments = res.data.filter(
         (app) => app.doctorName.toLowerCase() === `dr. ${doctorName.toLowerCase()}` || 
                  app.doctorName.toLowerCase() === doctorName.toLowerCase()

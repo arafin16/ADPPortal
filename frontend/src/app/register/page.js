@@ -12,7 +12,7 @@ export default function Register() {
     e.preventDefault();
     try {
       
-      const res = await axios.post("http://arafin3-001-site1.itempurl.com/api/Auth/register", formData);
+      const res = await axios.post("https://arafin3-001-site1.itempurl.com/api/Auth/register", formData);
       setMessage(res.data.message);
       setTimeout(() => router.push("/login"), 2000); // ২ সেকেন্ড পর লগইন 
     } catch (err) {

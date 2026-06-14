@@ -19,26 +19,30 @@ export default function Login() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
       
-      // 🎯 ২. আইডি এবং নেম ব্যাকএন্ড রেসপন্স থেকে সরাসরি বা অবজেক্ট থেকে সেফলি এক্সট্রাক্ট করা
+      // ২. আইডি এবং নেম ব্যাকএন্ড রেসপন্স থেকে সেফলি এক্সট্রাক্ট করা
       const userId = res.data.id || res.data.Id || res.data.userId || res.data.user?.id || res.data.user?.Id || null;
-      const userName = res.data.name || res.data.Name || res.data.user?.name || res.data.user?.Name || "Patient";
+      const userName = res.data.name || res.data.Name || res.data.user?.name || res.data.user?.Name || "User";
 
       const userObj = {
         id: userId,
         name: userName
       };
 
-      // 🎯 লোকালস্টোরেজে "user" অবজেক্টটি সেভ করা (যা আগে মিস হচ্ছিল)
+      // লোকালস্টোরেজে "user" অবজেক্টটি সেভ করা
       localStorage.setItem("user", JSON.stringify(userObj));
 
       setMessage(`Welcome back, ${userName}! Login Successful.`);
       
-      // ৩. রোল অনুযায়ী সঠিক ড্যাশবোর্ডে পাঠানো
+      // 🎯 ৩. রোল অনুযায়ী যার যার সঠিক ড্যাশবোর্ডে নিখুঁতভাবে পাঠানো
       setTimeout(() => {
-        if (res.data.role === "Admin") {
+        const userRole = res.data.role;
+        
+        if (userRole === "Admin") {
           router.push("/dashboard/admin");
+        } else if (userRole === "Doctor") {
+          router.push("/dashboard/doctor"); // 👈 ডক্টর হলে ডক্টর ড্যাশবোর্ডে যাবে
         } else {
-          router.push("/dashboard/patient");
+          router.push("/dashboard/patient"); // 👈 পেশেন্ট বা অন্য কেউ হলে পেশেন্ট ড্যাশবোর্ডে যাবে
         }
       }, 1000);
 
@@ -51,7 +55,7 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <form onSubmit={handleLogin} className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-center text-green-600">Patient Portal - Login</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-green-600">Medical Portal - Login</h2>
         {message && <p className="mb-4 text-center text-sm font-semibold text-green-500 bg-green-50 p-2 rounded">{message}</p>}
         
         <input 

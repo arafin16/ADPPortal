@@ -9,21 +9,23 @@ export default function PatientDashboard() {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [message, setMessage] = useState("");
   
-  // 🎯 Hydration Error এড়াতে এবং লোকালস্টোরেজ থেকে ইউজার ডেটা ইনিশিয়ালাইজ করার সেরা উপায়
+  // 🎯 লোকালস্টোরেজ থেকে ছোট হাতের (id) অথবা বড় হাতের (Id) যেকোনো ফরম্যাটে ডেটা সেফলি রিড করার লজিক
   const [currentUser, setCurrentUser] = useState(() => {
+    if (typeof window === "undefined") return { id: null, name: "Patient" };
+
     try {
-      const userData = typeof window !== "undefined" ? localStorage.getItem("user") : null;
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        return {
-          id: parsedUser.id || parsedUser.Id || null,
-          name: parsedUser.name || parsedUser.Name || "Patient",
-        };
-      }
+      const userData = localStorage.getItem("user");
+      if (!userData) return { id: null, name: "Patient" };
+
+      const parsedUser = JSON.parse(userData);
+      const userId = parsedUser.id || parsedUser.Id || parsedUser.ID || null;
+      const userName = parsedUser.name || parsedUser.Name || "Patient";
+
+      return { id: userId, name: userName };
     } catch (e) {
       console.error("Failed to parse user from localStorage", e);
+      return { id: null, name: "Patient" };
     }
-    return { id: null, name: "Patient" };
   });
 
   // ১. পেজ লোড হলেই ডক্টর লিস্ট ফেচ করা
@@ -31,7 +33,7 @@ export default function PatientDashboard() {
     fetchDoctors();
   }, []);
 
-  // ইউজার আইডি পাওয়ার পর তার নির্দিষ্ট অ্যাপয়েন্টমেন্ট লিস্ট লোড করা
+  // 🎯 ইউজার আইডি পারফেক্টলি সেট হওয়ার পর কেবল এপিআই কল করা (null এড়ানো হলো)
   useEffect(() => {
     if (currentUser.id) {
       fetchMyAppointments(currentUser.id);
@@ -48,15 +50,16 @@ export default function PatientDashboard() {
   }
 
   async function fetchMyAppointments(patientId) {
+    if (!patientId) return;
     try {
       const res = await axios.get(`https://arafin3-001-site1.itempurl.com/api/Appointment/patient/${patientId}`);
       setAppointments(res.data);
     } catch (err) {
-      console.error("Failed to fetch appointments.");
+      console.error("Failed to fetch appointments.", err);
     }
   }
 
-  // ২. ডাইনামিক অ্যাপয়েন্টমেন্ট বুকিং (৪০০ এরর এবং মডেল ভ্যালিডেশন ফিক্সড)
+  // ২. ডাইনামিক অ্যাপয়েন্টমেন্ট বুকিং
   const handleBook = async (e) => {
     e.preventDefault();
     if (!selectedDoctor || !appointmentDate) {
@@ -64,11 +67,14 @@ export default function PatientDashboard() {
       return;
     }
 
+    if (!currentUser.id) {
+      setMessage("User not authenticated. Please logout and login again.");
+      return;
+    }
+
     try {
-      // 🎯 .NET এর স্ট্যান্ডার্ড DateTime ফরমেটের জন্য ISO স্ট্রিং কনভার্ট
       const formattedDate = new Date(appointmentDate).toISOString();
 
-      // 🎯 ডটনেট মডেল ভ্যালিডেশনের সাথে মিল রেখে কী-গুলোর নাম PascalCase করা হলো
       const res = await axios.post("https://arafin3-001-site1.itempurl.com/api/Appointment/book", {
         PatientId: Number(currentUser.id), 
         PatientName: currentUser.name, 
@@ -78,7 +84,7 @@ export default function PatientDashboard() {
       });
 
       setMessage(res.data.message || "Booked successfully!");
-      fetchMyAppointments(currentUser.id); // টেবিল অটো রিফ্রেশ
+      fetchMyAppointments(currentUser.id); // বুকিং সাকসেস হওয়ার সাথে সাথে টেবিল রিফ্রেশ
       setSelectedDoctor("");
       setAppointmentDate("");
     } catch (err) {
@@ -87,7 +93,7 @@ export default function PatientDashboard() {
     }
   };
 
-  // ৩. অ্যাপয়েন্টমেন্ট ক্যানসেল করা (ফিক্সড পেলোড)
+  // ৩. অ্যাপয়েন্টমেন্ট ক্যানсел করা
   const handleCancel = async (id) => {
     if (!confirm("Are you sure you want to cancel this appointment?")) return;
 
@@ -183,22 +189,22 @@ export default function PatientDashboard() {
                   ) : (
                     appointments.map((app) => (
                       <tr key={app.id} className="hover:bg-gray-50 transition">
-                        <td className="p-3 font-medium text-gray-800">{app.doctorName}</td>
+                        <td className="p-3 font-medium text-gray-800">{app.doctorName || app.DoctorName}</td>
                         <td className="p-3 text-gray-600">
-                          {app.appointmentDate ? new Date(app.appointmentDate).toLocaleString() : "N/A"}
+                          {app.appointmentDate || app.AppointmentDate ? new Date(app.appointmentDate || app.AppointmentDate).toLocaleString() : "N/A"}
                         </td>
                         <td className="p-3">
                           <span className={`px-2 py-1 rounded text-xs font-bold ${
-                            app.status === "Approved" ? "bg-green-100 text-green-800" :
-                            app.status === "Cancelled" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"
+                            (app.status || app.Status) === "Approved" ? "bg-green-100 text-green-800" :
+                            (app.status || app.Status) === "Cancelled" ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"
                           }`}>
-                            {app.status}
+                            {app.status || app.Status}
                           </span>
                         </td>
                         <td className="p-3 text-center">
-                          {app.status !== "Cancelled" ? (
+                          {(app.status || app.Status) !== "Cancelled" ? (
                             <button
-                              onClick={() => handleCancel(app.id)}
+                              onClick={() => handleCancel(app.id || app.Id)}
                               className="bg-red-500 hover:bg-red-600 text-white text-xs py-1 px-3 rounded font-semibold transition"
                             >
                               Cancel

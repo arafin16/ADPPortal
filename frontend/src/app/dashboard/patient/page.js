@@ -9,25 +9,20 @@ export default function PatientDashboard() {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [message, setMessage] = useState("");
   
-  // 🎯 লোকালস্টোরেজ থেকে আইডি রিড করার সুপার-সেফ মেকানিজম (Hydration Error ফিক্সড)
+  // Initialize currentUser from localStorage on first render to avoid calling setState inside an effect
   const [currentUser, setCurrentUser] = useState(() => {
-    if (typeof window === "undefined") return { id: null, name: "Patient" };
-
     try {
-      const userData = localStorage.getItem("user");
-      if (!userData) return { id: null, name: "Patient" };
-
-      const parsedUser = JSON.parse(userData);
-      
-      // 🎯 ব্যাকএন্ড থেকে ডিরেক্ট আইডি বা ইউজার অবজেক্ট যে বানানেই আসুক, সব চেক করা হলো
-      const userId = parsedUser.id || parsedUser.Id || parsedUser.ID || parsedUser.userId || null;
-      const userName = parsedUser.name || parsedUser.Name || "Patient";
-
-      return { id: userId, name: userName };
+      const userData = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        const userId = parsedUser.id || parsedUser.Id || parsedUser.ID || parsedUser.userId || null;
+        const userName = parsedUser.name || parsedUser.Name || 'Patient';
+        return { id: userId, name: userName };
+      }
     } catch (e) {
-      console.error("Failed to parse user from localStorage", e);
-      return { id: null, name: "Patient" };
+      console.error('Failed to parse user from localStorage', e);
     }
+    return { id: null, name: 'Patient' };
   });
 
   // ১. পেজ লোড হলেই ডক্টর লিস্ট ফেচ করা
@@ -35,7 +30,7 @@ export default function PatientDashboard() {
     fetchDoctors();
   }, []);
 
-  // 🎯 ইউজার আইডি পারফেক্টলি সেট হওয়ার পর কেবল এপিআই কল করা (null এড়ানো হলো)
+  // 🎯 ইউজার আইডি পারফেক্টলি সেট হওয়ার পর কেবল অ্যাপয়েন্টমেন্ট লিস্ট লোড হবে
   useEffect(() => {
     if (currentUser.id) {
       fetchMyAppointments(currentUser.id);
@@ -69,6 +64,7 @@ export default function PatientDashboard() {
       return;
     }
 
+    // 🎯 রিয়েল-টাইমে আপডেট হওয়া স্টেট ভ্যালু পারফেক্টলি চেক করবে
     if (!currentUser.id) {
       setMessage("User not authenticated. Please logout and login again.");
       return;
@@ -86,16 +82,17 @@ export default function PatientDashboard() {
       });
 
       setMessage(res.data.message || "Booked successfully!");
-      fetchMyAppointments(currentUser.id); // বুকিং সাকসেস হওয়ার সাথে সাথে টেবিল রিফ্রেশ
+      fetchMyAppointments(currentUser.id); // টেবিল অটো রিফ্রেশ
       setSelectedDoctor("");
       setAppointmentDate("");
+      setTimeout(() => setMessage(""), 4000);
     } catch (err) {
       console.error("Booking Error:", err.response?.data || err.message);
       setMessage("Booking failed. Please try again.");
     }
   };
 
-  // ৩. অ্যাপয়েন্টমেন্ট ক্যানсел করা
+  // ৩. অ্যাপয়েন্টমেন্ট ক্যানসেল করা
   const handleCancel = async (id) => {
     if (!confirm("Are you sure you want to cancel this appointment?")) return;
 

@@ -56,7 +56,7 @@ export default function PatientDashboard() {
     }
   }
 
-  // ২. ডাইনামিক অ্যাপয়েন্টমেন্ট বুকিং
+  // ২. ডাইনামিক অ্যাপয়েন্টমেন্ট বুকিং (৪০০ এরর এবং মডেল ভ্যালিডেশন ফিক্সড)
   const handleBook = async (e) => {
     e.preventDefault();
     if (!selectedDoctor || !appointmentDate) {
@@ -65,19 +65,25 @@ export default function PatientDashboard() {
     }
 
     try {
+      // 🎯 .NET এর স্ট্যান্ডার্ড DateTime ফরমেটের জন্য ISO স্ট্রিং কনভার্ট
+      const formattedDate = new Date(appointmentDate).toISOString();
+
+      // 🎯 ডটনেট মডেল ভ্যালিডেশনের সাথে মিল রেখে কী-গুলোর নাম PascalCase করা হলো
       const res = await axios.post("https://arafin3-001-site1.itempurl.com/api/Appointment/book", {
-        patientId: currentUser.id, 
-        patientName: currentUser.name, 
-        doctorName: selectedDoctor,
-        appointmentDate: appointmentDate,
-        status: "Pending"
+        PatientId: Number(currentUser.id), 
+        PatientName: currentUser.name, 
+        DoctorName: selectedDoctor,
+        AppointmentDate: formattedDate,
+        Status: "Pending"
       });
+
       setMessage(res.data.message || "Booked successfully!");
       fetchMyAppointments(currentUser.id); // টেবিল অটো রিফ্রেশ
       setSelectedDoctor("");
       setAppointmentDate("");
     } catch (err) {
-      setMessage("Booking failed. Try again.");
+      console.error("Booking Error:", err.response?.data || err.message);
+      setMessage("Booking failed. Please try again.");
     }
   };
 
@@ -86,7 +92,6 @@ export default function PatientDashboard() {
     if (!confirm("Are you sure you want to cancel this appointment?")) return;
 
     try {
-      // 🎯 ব্যাকএন্ড কন্ট্রোলারের সাথে মিল রেখে বডি অবজেক্ট আকারে পাঠানো হলো
       await axios.put(`https://arafin3-001-site1.itempurl.com/api/Appointment/status/${id}`, 
         { status: "Cancelled" }, 
         { headers: { "Content-Type": "application/json" } }
